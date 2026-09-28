@@ -326,9 +326,22 @@ Item {
     }
   }
 
+  // Quickshell reports a toplevel address WITHOUT the `0x` prefix
+  // (`5e119bc7f6a0`), while Hyprland's own tooling and its `address:` selector
+  // use the prefixed form (`0x5e119bc7f6a0`). Normalise here rather than
+  // trusting either spelling: a guard that assumed the prefixed form rejected
+  // every real click silently, while passing every test fed an address copied
+  // from `hyprctl`.
+  function normalizeAddress(value) {
+    var a = String(value || "")
+    if (a.indexOf("0x") === 0 || a.indexOf("0X") === 0) a = a.substring(2)
+    return /^[0-9a-fA-F]+$/.test(a) ? "0x" + a : ""
+  }
+
   function activate(win) {
-    if (!win || !/^0x[0-9a-fA-F]+$/.test(String(win.address))) return
-    root.pendingFocus = String(win.address)
+    var address = root.normalizeAddress(win ? win.address : "")
+    if (address === "") return
+    root.pendingFocus = address
     root.dismiss()
     focusTimer.restart()
   }

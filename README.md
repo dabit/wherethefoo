@@ -223,6 +223,11 @@ both. Hyprland's Lua config (Omarchy 4) rejects the bare
 `Hyprland.usingLua` and sends `hl.dsp.focus({ window = "address:0x…" })`
 instead, falling back to `focuswindow` on a non-Lua setup.
 
+**Addresses need normalising.** Quickshell reports a toplevel address without
+the `0x` prefix (`5e119bc7f6a0`); Hyprland's `address:` selector and `hyprctl`
+use the prefixed form. A guard that assumes the prefixed form rejects every
+real click while passing every test written against `hyprctl` output.
+
 **The dispatch has to come after the overlay is gone, on a timer.** Dismissing
 a layer surface that holds exclusive keyboard focus makes Hyprland
 re-evaluate focus, and that fallback runs late enough to override a dispatch
