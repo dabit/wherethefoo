@@ -7,10 +7,19 @@
   "license": "MIT",
   "description": "Tiled live previews of every open window across all workspaces; click one to jump to its workspace and focus it",
   "kinds": [
-    "overlay"
+    "overlay",
+    "bar-widget"
   ],
   "keepLoaded": true,
   "entryPoints": {
-    "overlay": "WhereTheFoo.qml"
+    "overlay": "WhereTheFoo.qml",
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Where The Foo",
+    "description": "Show every open window across all workspaces",
+    "category": "Compositor",
+    "allowMultiple": false,
+    "defaultSection": "left"
   }
 }

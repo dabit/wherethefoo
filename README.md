@@ -8,7 +8,8 @@ press Enter — to jump to that window's workspace and focus the window.
 
 | Input | Action |
 |-------|--------|
-| your keybinding | Open / close the overlay ([set one up](#give-it-a-trigger)) |
+| Click the bar icon | Open / close the overlay |
+| your keybinding | Same, if you bind one ([how](#opening-it)) |
 | Click a tile | Go to that workspace and focus that window |
 | `←` `→` `Tab` | Move the selection |
 | `↑` `↓` | Move a row |
@@ -57,8 +58,9 @@ Like every Omarchy plugin, this runs unsandboxed inside `omarchy-shell`.
 ## Files
 
 ```
-manifest.json     plugin metadata — kind "overlay", entry point WhereTheFoo.qml
+manifest.json     plugin metadata — kinds "overlay" + "bar-widget"
 WhereTheFoo.qml   the overlay: model, grid, keyboard handling, activation
+BarWidget.qml     the bar entry that opens it
 Layout.js         pure grid arithmetic and filtering (no QML dependencies)
 LICENSE           MIT
 ```
@@ -82,11 +84,15 @@ The plugin folder must be a real directory — `omarchy plugin validate` refuses
 a symlinked one, so a checkout that lives elsewhere gets cloned in rather than
 linked in.
 
-### Give it a trigger
+### Opening it
 
-A plugin cannot ship a keybinding — the manifest has no field for one, and
-Omarchy has no command that writes bindings. So after installing, add one
-yourself in `~/.config/hypr/bindings.lua`.
+Enabling the plugin puts a grid icon in the bar — click it to open the
+overlay. That works straight after install, with no configuration.
+
+A keybinding is nicer for something you open constantly, but a plugin cannot
+ship one: the manifest has no field for a keybinding, and Omarchy has no
+command that writes bindings. So add it yourself in
+`~/.config/hypr/bindings.lua`.
 
 **Recommended:**
 
