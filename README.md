@@ -4,6 +4,8 @@ A fullscreen overlay showing **every open window on every workspace** as a grid
 of live thumbnails, grouped by workspace. Click a tile — or arrow to it and
 press Enter — to jump to that window's workspace and focus the window.
 
+![Where The Foo: windows from three workspaces as live thumbnails](preview.png)
+
 ## Using it
 
 | Input | Action |
@@ -62,6 +64,7 @@ manifest.json     plugin metadata — kinds "overlay" + "bar-widget"
 WhereTheFoo.qml   the overlay: model, grid, keyboard handling, activation
 BarWidget.qml     the bar entry that opens it
 Layout.js         pure grid arithmetic and filtering (no QML dependencies)
+preview.png       marketplace/README screenshot
 LICENSE           MIT
 ```
 
