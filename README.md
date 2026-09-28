@@ -8,7 +8,7 @@ press Enter — to jump to that window's workspace and focus the window.
 
 | Input | Action |
 |-------|--------|
-| `SUPER + E` | Open / close the overlay |
+| your keybinding | Open / close the overlay ([set one up](#give-it-a-trigger)) |
 | Click a tile | Go to that workspace and focus that window |
 | `←` `→` `Tab` | Move the selection |
 | `↑` `↓` | Move a row |
@@ -82,14 +82,76 @@ The plugin folder must be a real directory — `omarchy plugin validate` refuses
 a symlinked one, so a checkout that lives elsewhere gets cloned in rather than
 linked in.
 
-Then add a keybinding to `~/.config/hypr/bindings.lua`:
+### Give it a trigger
+
+A plugin cannot ship a keybinding — the manifest has no field for one, and
+Omarchy has no command that writes bindings. So after installing, add one
+yourself in `~/.config/hypr/bindings.lua`.
+
+**Recommended:**
 
 ```lua
-o.bind("SUPER + E", "Where The Foo", "omarchy-shell shell toggle io.github.dabit.wherethefoo '{}'")
+o.bind("SUPER + D", "Where The Foo", "omarchy-shell shell toggle io.github.dabit.wherethefoo '{}'")
 ```
 
-`SUPER + E` is unbound in a stock Omarchy install. Reload with
-`hyprctl reload` and check with `hyprctl configerrors`.
+`SUPER + D` is unbound in stock Omarchy, so nothing is displaced, and a plain
+letter resolves the same way on every Latin keyboard layout. The letters free
+in a stock install are `A B D E H I M N Q R U Y Z`. Apply with
+`hyprctl reload` and confirm with `hyprctl configerrors`.
+
+**If you want the Exposé-shaped chord**, `SUPER` + the key above Tab feels
+right — but read the dead-key note below first, because the obvious spelling
+silently does nothing on a lot of layouts:
+
+```lua
+o.bind("SUPER + GRAVE", "Where The Foo", "...")       -- plain layouts
+o.bind("SUPER + dead_grave", "Where The Foo", "...")  -- us(intl) and friends
+```
+
+#### The dead-key trap
+
+Hyprland binds a **keysym**, not a physical key. On `us(intl)` — and on most
+European layouts — the key above Tab does not produce `grave`:
+
+```
+key <TLDE> { [ dead_grave, dead_tilde, grave, asciitilde ] };
+```
+
+`grave` sits on level 3, behind AltGr, so `SUPER + GRAVE` registers cleanly,
+shows up in `hyprctl binds`, and can never match a keypress. Nothing errors;
+the key is simply dead. Binding `dead_grave` instead makes the same physical
+key work (confirmed on `us(intl)`). Check what your own layout emits before
+binding a punctuation key:
+
+```bash
+xkbcli compile-keymap --layout "$(hyprctl devices -j | jq -r '.keyboards[0].layout')" \
+  --variant "$(hyprctl devices -j | jq -r '.keyboards[0].variant')" | grep 'key <TLDE>'
+```
+
+Binding the physical key instead would dodge this, but **`code:NN` is not
+available through `o.bind`** — Omarchy's `hl.bind` swallows `"SUPER + code:49"`
+as a literal key name, reloading without error and binding nothing. Bind the
+keysym your layout actually emits, or use a letter.
+
+#### Chords that are already taken
+
+Every Tab combination is spoken for: `SUPER+TAB` is "Next workspace",
+`SUPER+SHIFT+TAB` "Previous workspace", `SUPER+CTRL+TAB` "Former workspace",
+`SUPER+ALT+TAB` "Next window in group", and `SUPER+SHIFT+ALT+TAB` "Previous
+window in group". Claiming one means `hl.unbind` first, and losing that action.
+
+To check a chord before taking it, ask Hyprland's live bind table — the only
+source that has your bindings and Omarchy's defaults together:
+
+```bash
+hyprctl binds | awk '/^bind/{mm="";k="";d=""} /modmask:/{mm=$2} /^\tkey:/{k=$2} \
+  /description:/{sub(/^\tdescription: /,"");d=$0} /arg:/{if(k!="") print mm"\t"k"\t"d}' | sort -u
+```
+
+Modmask is a bitmask: SHIFT 1, CTRL 4, ALT 8, SUPER 64 — so `SUPER+ALT` is 72.
+
+The toggle command also works from a terminal or any script, if you would
+rather not bind a key at all.
 
 ## Update
 
@@ -107,8 +169,8 @@ omarchy plugin remove io.github.dabit.wherethefoo --yes
 That disables the plugin, drops its entry from
 `~/.config/omarchy/shell.json`, and deletes
 `~/.config/omarchy/plugins/io.github.dabit.wherethefoo/`. Then remove the
-`o.bind("SUPER + E", ...)` line from `~/.config/hypr/bindings.lua` and run
-`hyprctl reload`.
+`o.bind(..., "Where The Foo", ...)` line from `~/.config/hypr/bindings.lua`
+and run `hyprctl reload`.
 
 Nothing else is left behind: the plugin writes no files outside its own
 directory and its `shell.json` entry.
