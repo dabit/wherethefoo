@@ -47,7 +47,10 @@ no packages and runs no external commands.
 
 ### Privileges and data
 
-- **No network access.** Nothing is fetched, uploaded, or phoned home.
+- **No network access.** Nothing is fetched, uploaded, or phoned home. Window
+  titles and app names are rendered with `textFormat: Text.PlainText`, so a
+  title containing markup cannot make Qt fetch a remote image and turn this
+  into an outbound request.
 - **No subprocesses.** Window focus goes over Hyprland's own IPC socket via
   `Hyprland.dispatch`, not through a shell.
 - **No disk writes.** No cache, no state file, no screenshots saved anywhere.

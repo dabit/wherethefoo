@@ -441,6 +441,7 @@ Item {
           height: titleText.implicitHeight
 
           Text {
+            textFormat: Text.PlainText
             id: titleText
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
@@ -454,6 +455,7 @@ Item {
           }
 
           Text {
+            textFormat: Text.PlainText
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             text: "Enter / click focus   ·   ↑↓←→ move   ·   type to filter   ·   Esc close"
@@ -464,6 +466,7 @@ Item {
         }
 
         Text {
+          textFormat: Text.PlainText
           anchors.top: headerRow.bottom
           anchors.topMargin: Style.spacing.xxl
           anchors.horizontalCenter: parent.horizontalCenter
@@ -505,6 +508,7 @@ Item {
                 spacing: Style.spacing.sm
 
                 Text {
+                  textFormat: Text.PlainText
                   text: headerTile.modelData.special
                     ? headerTile.modelData.label
                     : "Workspace " + headerTile.modelData.label
@@ -515,6 +519,7 @@ Item {
                 }
 
                 Text {
+                  textFormat: Text.PlainText
                   text: {
                     var md = headerTile.modelData
                     var n = md.count === 1 ? "1 window" : md.count + " windows"
@@ -646,7 +651,13 @@ Item {
                   color: Color.accent
                 }
 
+                // A window title is attacker-controlled: any app can set its
+                // own. Qt's default Text.AutoText sniffs for rich text and
+                // will fetch remote <img> sources, which would turn a title
+                // into an outbound request from a shell that makes none.
+                // Every Text here is pinned to PlainText for that reason.
                 Text {
+                  textFormat: Text.PlainText
                   anchors.left: captionIcon.right
                   anchors.leftMargin: Style.spacing.sm
                   anchors.right: focusDot.visible ? focusDot.left : parent.right
