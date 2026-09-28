@@ -298,18 +298,39 @@ Item {
 
   // ------------------------------------------------------------ activation
 
-  // Focusing a window also switches to its workspace, so one dispatch does
-  // both halves of the job. Hyprland's Lua config (Omarchy 4) rejects the bare
-  // `focuswindow address:...` form, so pick the dispatcher the running
-  // compositor actually parses. The overlay is dismissed first so focus lands
-  // on the target and not back on the layer surface.
+  property string pendingFocus: ""
+
+  // The focus dispatch has to happen AFTER the overlay's layer surface is
+  // gone. Dismissing a surface that holds exclusive keyboard focus makes
+  // Hyprland re-evaluate focus, and that fallback runs late and overrides
+  // anything dispatched before it — the symptom is landing on the right
+  // workspace with the wrong window focused, even with seconds in between.
+  // So: dismiss, let the unmap settle, then focus. This is also why the
+  // manifest sets `keepLoaded` — without it the host destroys this item on
+  // hide and takes the timer with it, and nothing is dispatched at all.
+  Timer {
+    id: focusTimer
+    interval: 120
+    repeat: false
+    onTriggered: {
+      if (root.pendingFocus === "") return
+      var address = root.pendingFocus
+      root.pendingFocus = ""
+      // Hyprland's Lua config (Omarchy 4) rejects the bare
+      // `focuswindow address:…` form, so pick the dispatcher the running
+      // compositor actually parses. Focusing a window also switches to its
+      // workspace, so one dispatch does both halves of the job.
+      Hyprland.dispatch(Hyprland.usingLua
+        ? 'hl.dsp.focus({ window = "address:' + address + '" })'
+        : "focuswindow address:" + address)
+    }
+  }
+
   function activate(win) {
     if (!win || !/^0x[0-9a-fA-F]+$/.test(String(win.address))) return
+    root.pendingFocus = String(win.address)
     root.dismiss()
-    if (Hyprland.usingLua)
-      Hyprland.dispatch('hl.dsp.focus({ window = "address:' + win.address + '" })')
-    else
-      Hyprland.dispatch("focuswindow address:" + win.address)
+    focusTimer.restart()
   }
 
   function activateSelected() {
@@ -551,7 +572,9 @@ Item {
                   // Cap the capture resolution: N live captures at full size
                   // would be a lot of GPU work for thumbnails this small.
                   constraintSize: Qt.size(Math.round(width * 2), Math.round(height * 2))
-                  captureSource: tile.win.toplevel || null
+                  // keepLoaded means these delegates outlive a summon, so the
+                  // capture source is dropped on close, not just paused.
+                  captureSource: root.opened ? (tile.win.toplevel || null) : null
                   live: root.opened
                   opacity: hasContent ? 1 : 0
                   Behavior on opacity { NumberAnimation { duration: 120 } }

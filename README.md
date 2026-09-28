@@ -222,3 +222,17 @@ both. Hyprland's Lua config (Omarchy 4) rejects the bare
 `dispatch focuswindow address:0x…` form, so the plugin branches on
 `Hyprland.usingLua` and sends `hl.dsp.focus({ window = "address:0x…" })`
 instead, falling back to `focuswindow` on a non-Lua setup.
+
+**The dispatch has to come after the overlay is gone, on a timer.** Dismissing
+a layer surface that holds exclusive keyboard focus makes Hyprland
+re-evaluate focus, and that fallback runs late enough to override a dispatch
+issued before it. The symptom is specific and misleading: you land on the
+right workspace with the wrong window focused. Seconds of delay do not help —
+the fallback fires on unmap, whenever that is — so the order has to be
+dismiss, wait for the unmap to settle, then focus.
+
+That in turn is why `manifest.json` sets `keepLoaded: true`. Without it the
+host deactivates this plugin's Loader on hide and destroys the item, taking
+the pending timer with it, and nothing is dispatched at all. Every
+first-party overlay (clipboard, emojis, image-picker, reminders, menu) sets
+the same flag.

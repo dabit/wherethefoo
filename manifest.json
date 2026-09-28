@@ -6,6 +6,11 @@
   "author": "David Padilla",
   "license": "MIT",
   "description": "Tiled live previews of every open window across all workspaces; click one to jump to its workspace and focus it",
-  "kinds": ["overlay"],
-  "entryPoints": { "overlay": "WhereTheFoo.qml" }
+  "kinds": [
+    "overlay"
+  ],
+  "keepLoaded": true,
+  "entryPoints": {
+    "overlay": "WhereTheFoo.qml"
+  }
 }
