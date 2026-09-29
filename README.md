@@ -165,6 +165,32 @@ Modmask is a bitmask: SHIFT 1, CTRL 4, ALT 8, SUPER 64 — so `SUPER+ALT` is 72.
 The toggle command also works from a terminal or any script, if you would
 rather not bind a key at all.
 
+## Verifying what you installed
+
+`omarchy plugin add` clones the repository's default branch at the moment you
+run it, so what lands on disk is whatever `main` pointed at then — not
+necessarily the commit the marketplace validated. Check which one you got:
+
+```bash
+git -C ~/.config/omarchy/plugins/io.github.dabit.wherethefoo rev-parse HEAD
+git -C ~/.config/omarchy/plugins/io.github.dabit.wherethefoo log --oneline -5
+```
+
+The marketplace records the commit it validated in the submission thread
+([#9203](https://github.com/omacom/omarchy-plugin-marketplace/issues/9203)),
+and `git log` here shows everything that has landed since.
+
+`main` only ever carries code intended for release, and the branch is
+protected against force-pushes and deletion, so a commit you have inspected
+cannot be rewritten out from under you. You can pin to a specific commit or
+tag with ordinary git — but note that a detached HEAD makes
+`omarchy plugin update` fail, since it fast-forwards the checked-out branch.
+
+Everything this plugin can do is listed under **Privileges and data** above.
+Like every Omarchy plugin it runs unsandboxed, in the same process as the bar,
+the lock screen and the polkit agent; marketplace approval is a listing
+decision, not a security audit. Read the source — it is four files.
+
 ## Update
 
 ```bash
